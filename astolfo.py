@@ -1,9 +1,10 @@
 import discord
 from discord.ext import commands
+import random
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
-bot = commands.Bot(command_prefix='.')
+bot = commands.Bot(command_prefix='$')
 token = 'ODM4OTMyODQ2MTE3OTEyNjA2.YJCTGQ.Vaj7Z1OixlGP9So4anYKNtY6n2s'
 
 @client.event
@@ -20,6 +21,7 @@ async def on_ready():
 @client.event
 async def on_member_join(member):
     print(f'Seja bem-viado, {member}\n todo mundo aqui é um lixo e ninguém vai te julgar.')
+    await client.message(f'Seja bem-viado, {member}\n todo mundo aqui é um lixo e ninguém vai te julgar.')
 
 
 @client.event
@@ -27,7 +29,7 @@ async def on_member_remove(member):
     print(f'Ban hammer nessa desgraça chamada {member}')
 
 @bot.command()
-async def teste(ctx, arg):
+async def ping(ctx, arg):
     print(ctx, arg)
     await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
 
@@ -35,7 +37,7 @@ async def teste(ctx, arg):
 async def test(ctx, arg):
     print(2)
 
-@bot.command(aliases=['8ball', 'text'])
+@bot.command(aliases=['8ball', '.8ball'])
 async def _8ball(ctx, *, question):
     responses = ["It is certain.",
                 "It is decidedly so.",

@@ -20,24 +20,10 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if message.content.startswith(pf_insult):
-            await message.channel.send(message.content.lstrip(pf_insult) + " CORNO COACH QUÂNTICO ELEITOR DO BOLSONARO FUDIDO")
-
-    if message.content.startswith('/members'):
-        member_list = message.guild.members
-        print("Server Name - ", message.guild.name)
-        print("Server Owner -", message.guild.owner)
-        print("Members Count - ", message.guild.member_count)
-
-        for member in member_list:
-            await message.channel.send(member)
-
-    if message.content.startswith('/bot_info'):
-        await message.channel.send("This is Astolfo bot, type /help for more info.")
-        await message.channel.send("help feature actually not working lmao")
-
-    if message.content.startswith('MOAN help'):
-        await message.channel.send("Don't insist, it does not work...")
+    if message.content.startswith('$members'):
+        member_list = message.guild.members.names
+        print(member_list)
+        return member_list
 
 
 client.run(token)
