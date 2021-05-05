@@ -1,16 +1,31 @@
 import discord
 from discord.ext import commands
 import random
-#from gemidobot.py import on_message
 
-client = commands.Bot(command_prefix='$')
+print("Starting bot ...\n")
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix='$', intents=intents)
 token = 'ODM4OTMyODQ2MTE3OTEyNjA2.YJCTGQ.Vaj7Z1OixlGP9So4anYKNtY6n2s'
 member_list = []
+
 
 # Displays on terminal when the bot is up.
 @client.event
 async def on_ready():
+    global monke_state
+    monke_state = False
     print('Bot is ready!')
+    for guilda in client.guilds:
+        for member in guilda.members:
+            if not member.bot:
+                member_list.append(member.name)
+
+
+# Welcome message to new members
+@client.event
+async def on_member_join(member):
+    print(f'Seja bem-viado, {member}\n todo mundo aqui é um lixo e ninguém vai te julgar.')
+    await client.message(f'Seja bem-viado, {member}\n todo mundo aqui é um lixo e ninguém vai te julgar.')
 
 
 # Says on discord chat the info of the Author when typed $minfo
@@ -31,7 +46,6 @@ async def minfo(ctx):
 async def ping(ctx):
     await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
 
-
 # Says on discord chat a random response to a question, based on the list below
 # The command is $8ball {question}
 @client.command(aliases=['8ball', '.8ball'])
@@ -41,12 +55,12 @@ async def _8ball(ctx, *, question):
                 "Sem dúvida",
                 "Sim - Definitivamente",
                 "Você pode contar com isso.",
-                "Como eu vejo, sim.",
+                "Ao meu ver, sim.",
                 "Provavelmente sim.",
                 "Há uma boa perspectiva.",
                 "Sim.",
                 "Os sinais apontam que sim.",
-                "Resposta incerta, tente novamente.",
+                "Sua pergunta foi tão bosta que o bot travou.",
                 "Pergunte novamente depois.",
                 "Melhor não te contar agora.",
                 "Não consigo prever agora.",
@@ -54,8 +68,8 @@ async def _8ball(ctx, *, question):
                 "Não conte com isso.",
                 "Minha resposta é não.",
                 "Minhas fontes dizem que não.",
-                "Não tem uma perspectiva muito boa.",
-                "Muito duvidoso."]
+                "A perspectiva não é muito boa.",
+                "Aposto que não."]
     await ctx.send(f'''Pergunta: {question}
                    Resposta: {random.choice(responses)}''')
 
@@ -77,6 +91,23 @@ async def kick(ctx, member : discord.Member, *, reason=None):
         await ctx.send(f'O corno {member} foi kickado por {reason}.\nbye bye bitch bye bye')
 
 
+@client.command()
+async def get_members(ctx):
+    for guilda in client.guilds:
+        for member in guilda.members:
+            if not member.bot:
+                member_list.append(member.name)
+                await ctx.send(f'Membro - @{member.name}')
 
+
+@client.command()
+async def mention_info(ctx, *, mention):
+    await ctx.send(mention)
+
+
+@client.event
+async def on_message(message):
+    print(f'{"-"*25}\nAuthor: {message.author}\nMessage: {message.content}\n{"-"*25}')
+    await client.process_commands(message)
 
 client.run(token)
