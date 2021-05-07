@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.utils import get
 import random
 
 print("Starting bot ...\n")
@@ -14,6 +15,8 @@ member_list = []
 @client.event
 async def on_ready():
     print(' BOT IS READY! '.center(50, '-'))
+    channel = client.get_channel(838973221285134378)
+    await channel.send(f'BOT IS READY CARALHO!!!')
     for guilda in client.guilds:
         for member in guilda.members:
             if not member.bot:
@@ -35,7 +38,7 @@ async def on_member_join(member):
 async def my_info(ctx):
     print(" MY_NFO START ".center(50, '-'))
     user = ctx.message.author
-    await ctx.send(f'''
+    await ctx.send(f'''\n
 Author name: {user.name}
 Author ID: {user.id}
 Author Discord Id: {ctx.message.author}
@@ -102,6 +105,8 @@ async def kick(ctx, member : discord.Member, *, reason=None):
     print(" KICK START ".center(50, '-'))
     if member not in member_list:
         await ctx.send(f'O corno {member} foi kickado pelo motivo:\n - {reason} -\n')
+        await kick
+
     print(" KICK END ".center(50, '-'), '\n')
 
 
@@ -111,8 +116,8 @@ async def get_members(ctx):
     for guilda in client.guilds:
         for member in guilda.members:
             if not member.bot:
-                member_list.append(member.name)
-                await ctx.send(f'Membro - {member}')
+                member_list.append(member)
+                await ctx.send(f'Membro - {member.name}')
     print(" GET_MEMBERS END ".center(50, '-'), '\n')
 
 
@@ -127,6 +132,7 @@ async def mention_info(ctx, *, mention):
 async def on_message(message):
     print(" ON_MESSAGE START ".center(50, '-'))
     if message.author == client.user:
+        print(f'bot_message - {message.content}')
         return
 
     else:
@@ -136,10 +142,22 @@ async def on_message(message):
 
 
 @client.command()
-async def member_info(ctx, member):
+async def member_info(ctx, * ,user):
     print(" MEMBER_INFO START ".center(50, '-'))
-    current_member = guild.fetch_user(member)
-    print(current_member)
-    await ctx.send(current_member)
-    print(" MEMBER_INFO END ".center(50, '-'))
+    user = user[3:21]
+    for guilda in client.guilds:
+        for member in guilda.members:
+            if not member.bot and int(user) == int(member.id):
+                await ctx.send(f'''
+-
+Member name: {member.name}
+Member ID: {member.id}
+Member Status: {member.status}
+Member Role: {str(member.top_role).lstrip('@')}
+Member Joined At: {member.joined_at}
+-
+                                ''')
+    print(" MEMBER_INFO END ".center(50, '-'), '\n')
+
+
 client.run(token)
