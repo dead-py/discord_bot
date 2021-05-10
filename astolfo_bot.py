@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord.utils import get
 import random
+import youtube_dl
 
 print("Starting bot ...\n")
 intents = discord.Intents.all()
@@ -53,7 +54,7 @@ Author Joined At: {user.joined_at}
 @client.command()
 async def ping(ctx):
     print(" PING START ".center(50, '-'))
-    await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
+    await ctx.send(f'Pong! {round(client.latency * 1000)}ms\n')
     print(" PING END ".center(50, '-'), '\n')
 
 
@@ -92,8 +93,8 @@ async def _8ball(ctx, *, question):
 @client.command()
 async def clear(ctx, amount=5):
     print(" CLEAR START ".center(50, '-'))
-    print(f'{ctx.author} cleaned {amount} messages.')
-    await ctx.channel.purge(limit=amount)
+    print(f'{ctx.author} cleaned {amount} messages.\n')
+    await ctx.channel.purge(limit=amount+1)
     await ctx.send(f'{ctx.author} cleaned {amount} messages.')
     print(" CLEAR END ".center(50, '-'), '\n')
 
@@ -104,7 +105,7 @@ async def clear(ctx, amount=5):
 async def kick(ctx, member : discord.Member, *, reason=None):
     print(" KICK START ".center(50, '-'))
     if member not in member_list:
-        await ctx.send(f'O corno {member} foi kickado pelo motivo:\n - {reason} -\n')
+        await ctx.send(f'O corno {member} foi kickado pelo motivo:\n - {reason} -')
         await kick
 
     print(" KICK END ".center(50, '-'), '\n')
@@ -127,20 +128,20 @@ async def mention_info(ctx, *, mention):
     await ctx.send(mention)
     print(" MENTION_INFO END ".center(50, '-'), '\n')
 
-
+# On message event, logs all the messages on the server
 @client.event
 async def on_message(message):
     print(" ON_MESSAGE START ".center(50, '-'))
     if message.author == client.user:
-        print(f'bot_message - {message.content}')
+        print(f'bot_message - {message.content}\n')
         return
 
     else:
-        print(f'Author: {message.author}\nMessage: {message.content}')
+        print(f'Author: {message.author}\nMessage: {message.content}\n')
         await client.process_commands(message)
     print(" ON_MESSAGE END ".center(50, '-'), '\n')
 
-
+# Show the specified member info
 @client.command()
 async def member_info(ctx, * ,user):
     print(" MEMBER_INFO START ".center(50, '-'))
@@ -159,5 +160,47 @@ Member Joined At: {member.joined_at}
                                 ''')
     print(" MEMBER_INFO END ".center(50, '-'), '\n')
 
+
+# https://medium.com/pythonland/build-a-discord-bot-in-python-that-plays-music-and-send-gifs-856385e605a1
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+class YTDLSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+        self.data = data
+        self.title - data.get('title')
+        self.url = ""
+
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+        if 'entries' in data:
+
+            #takes first item from a playlist
+            data = data['entries'][0]
+
+        filename = data['title'] if stream else ytdl.prepare_filename(data)
+        return filename
+
+
+@client.command(name='jooin', help='Tells the bot to join the voice channel')
+async def join(ctx):
+    if not ctx.message.author.voice:
+        await ctx.send(f'{ctx.message.author.name} is not connected to a voice channel.')
+        return
+    else:
+        channel = ctx.message.author.voice.get_channel
+
+    await channel.connect()
+
+
+@client.command(name='leave', help='To make the bot leave the voice chanel')
+async def leave(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client.is_connected():
+        await voice_client.disconnect()
+
+    else:
+        await ctx.send('The bot is not connected to a voice channel.')
 
 client.run(token)
