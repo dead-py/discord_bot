@@ -18,14 +18,13 @@ member_list = []
 # Displays on terminal when the bot is up.
 @bot.event
 async def on_ready():
-    print(' BOT IS READY! '.center(50, '-'))
+    print(' BUJÃO IS READY! '.center(50, '-'))
     channel = bot.get_channel(838973221285134378)
-    await channel.send(f'BOT IS READY CARALHO!!!')
+    await channel.send(f'Bujão is ready!')
     for guilda in bot.guilds:
         for member in guilda.members:
             if not member.bot:
                 member_list.append(member.name)
-                print(member.name)
 
 
 # Welcome message to new members
@@ -163,15 +162,21 @@ Member Joined At: {member.joined_at}
 @bot.command()
 async def join(ctx):
     print(" JOIN START ".center(50, '-'), '\n')
+
     if not ctx.message.author.voice:
-        await ctx.send(f'{ctx.message.author.name} is not connected to a voice channel.')
+        await ctx.send(f'The requester {ctx.message.author.name} is not connected to a voice channel.')
         return
     else:
         channel = ctx.author.voice.channel
 
+    try:
+        await channel.connect()
+        print(f'Bot Connected to {channel} channel.')
 
-    await channel.connect()
-    print(f'Bot Connected to {channel} channel.')
+    except discord.ClientException:
+        print('Bot already connected to voice channel.')
+        await ctx.send('Bot already connected to voice channel.')
+
     print(" JOIN END ".center(50, '-'), '\n')
 
 
@@ -191,39 +196,64 @@ async def leave(ctx):
 
     print(" LEAVE END ".center(50, '-'), '\n')
 
+
 @bot.command()
 async def play(ctx, url):
-    print(" PLAY START ".center(50, '-'), '\n')
-    try:
-        server = ctx.message.guild
-        print(server)
-        voice_channel = server.voice_client
-        print(voice_channel)
-        filename = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
-        print(f'Filename - {filename}')
-        voice_client.play(filename)
-        voice_channel.play(filename)
-        await ctx.send(f'** Now Playing: **\n{filename}')
+    print(" teste YDL START ".center(50, '-'), '\n')
 
-    except:
-        await ctx.send("The bot is not connected to a voice channel.")
-    print(" PLAY END ".center(50, '-'), '\n')
-
-
-@bot.command()
-async def yt(ctx, url):
-    YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
-    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
     voice = get(bot.voice_clients, guild=ctx.guild)
+    YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist':'True'}
+    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
     if not voice.is_playing():
         with YoutubeDL(YDL_OPTIONS) as ydl:
+            ydl.add_default_info_extractors()
             info = ydl.extract_info(url, download=False)
+
         URL = info['formats'][0]['url']
-        voice.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS, executable="C:/ffmpeg/bin/ffmpeg.exe"))
-        voice.is_playing()
+        try:
+            voice.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS, executable="C:/ffmpeg/bin/ffmpeg.exe"))
+            voice.is_playing()
+
+        except discord.AttributeError:
+            await ctx.send("The bot is not connected to a voice channel.\nYou must add it with $join")
     else:
         await ctx.send("Already playing song")
         return
 
+    print(" teste YDL END ".center(50, '-'), '\n')
+
+
+@bot.command()
+async def pause(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client.is_playing():
+        await voice_client.pause()
+
+    else:
+        await ctx.send('The bot is not playing anything at the moment.')
+
+
+@bot.command()
+async def resume(ctx):
+    voice_client = ctx.message.guild.voice_client
+
+    if voice_client.is_paused():
+        await voice_client.resume()
+    else:
+        await ctx.send('The bot is not playing anything at the moment.\n Use $play command.')
+
+
+@bot.command()
+async def stop():
+    voice_client = ctx.message.guild.voice_client
+
+
+
+@bot.command()
+async def yt_search(ctx, *, params):
+    pass
+
+
+#https://stackoverflow.com/questions/63065632/discor-py-bot-youtube-search
 bot.run(token())
