@@ -4,13 +4,13 @@ from discord.utils import get
 import random
 from youtube_dl import YoutubeDL
 from discord import FFmpegPCMAudio
+from bot_token import token
 
 
 print("Starting bot ...\n")
 intents = discord.Intents.all()
 #client = commands.Bot(command_prefix='$', intents=intents)
 bot = commands.Bot(command_prefix='$', intents=intents)
-token = 'ODM4OTMyODQ2MTE3OTEyNjA2.YJCTGQ.Vaj7Z1OixlGP9So4anYKNtY6n2s'
 guild = discord.guild
 member_list = []
 
@@ -226,4 +226,4 @@ async def yt(ctx, url):
         await ctx.send("Already playing song")
         return
 
-bot.run(token)
+bot.run(token())
