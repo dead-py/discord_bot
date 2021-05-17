@@ -1,10 +1,10 @@
-import discord
+import discord, random, urllib.parse, urllib.request, re
 from discord.ext import commands
 from discord.utils import get
-import random
 from youtube_dl import YoutubeDL
 from discord import FFmpegPCMAudio
 from bot_token import token
+
 
 
 print("Starting bot ...\n")
@@ -159,6 +159,8 @@ Member Joined At: {member.joined_at}
                                 ''')
     print(" MEMBER_INFO END ".center(50, '-'), '\n')
 
+
+# Makes the bot join voice channel.
 @bot.command()
 async def join(ctx):
     print(" JOIN START ".center(50, '-'), '\n')
@@ -180,6 +182,7 @@ async def join(ctx):
     print(" JOIN END ".center(50, '-'), '\n')
 
 
+# Make the bot leave from the voice channel.
 @bot.command()
 async def leave(ctx):
     print(" LEAVE START ".center(50, '-'), '\n')
@@ -196,7 +199,7 @@ async def leave(ctx):
 
     print(" LEAVE END ".center(50, '-'), '\n')
 
-
+# Plays audio from specific youtube url.
 @bot.command()
 async def play(ctx, url):
     print(" teste YDL START ".center(50, '-'), '\n')
@@ -224,6 +227,7 @@ async def play(ctx, url):
     print(" teste YDL END ".center(50, '-'), '\n')
 
 
+# Pauses the currently music, if there's any.
 @bot.command()
 async def pause(ctx):
     voice_client = ctx.message.guild.voice_client
@@ -233,7 +237,7 @@ async def pause(ctx):
     else:
         await ctx.send('The bot is not playing anything at the moment.')
 
-
+# Resumes the paused youtube audio, if there's any.
 @bot.command()
 async def resume(ctx):
     voice_client = ctx.message.guild.voice_client
@@ -244,16 +248,38 @@ async def resume(ctx):
         await ctx.send('The bot is not playing anything at the moment.\n Use $play command.')
 
 
+# Stops the youtube audio, if there's any.
 @bot.command()
-async def stop():
+async def stop(ctx):
     voice_client = ctx.message.guild.voice_client
 
+    if voice_client.is_playing():
+        await voice_client.stop()
+
+    else:
+        await ctx.send('The bot is not playing anything.\nUse the $play command to play something.')
 
 
+# Search for the arguments passed on youtube and plays the audio.
 @bot.command()
-async def yt_search(ctx, *, params):
+async def search(ctx, *, search):
+    query_string = urllib.parse.urlencode({'search_query': search})
+    html_content = urllib.request.urlopen(
+        'http://www.youtube.com/results?' + query_string)
+    search_results = re.findall(r'/watch\?v=(.{11})',
+                                html_content.read().decode())
+    try:
+        await play(ctx, 'https://www.youtube.com/watch?v=' + search_results[0])
+        await ctx.send(f'Playing: https://www.youtube.com/watch?v={search_results[0]}')
+
+    except:
+        await ctx.send('Somenthing happened with the Discord API.\nTry again another time.')
+
+
+# should have a gui implementation here...
+def bot_gui():
+    print('You should do the gui thing!')
     pass
 
 
-#https://stackoverflow.com/questions/63065632/discor-py-bot-youtube-search
 bot.run(token())
