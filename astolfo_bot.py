@@ -6,11 +6,11 @@ from discord import FFmpegPCMAudio
 from bot_token import token
 
 
-
 print("Starting bot ...\n")
 intents = discord.Intents.all()
-#client = commands.Bot(command_prefix='$', intents=intents)
+client = commands.Bot(command_prefix='$', intents=intents)
 bot = commands.Bot(command_prefix='$', intents=intents)
+bot.remove_command('help')
 guild = discord.guild
 member_list = []
 
@@ -19,13 +19,15 @@ member_list = []
 @bot.event
 async def on_ready():
     print(' BUJÃO IS READY! '.center(50, '-'))
+
     channel = bot.get_channel(838973221285134378)
     await channel.send(f'Bujão is ready!')
+    #await channel.send(GIF_PATH)
     for guilda in bot.guilds:
-        for member in guilda.members:
-            if not member.bot:
-                member_list.append(member.name)
-
+        for discord.Member in guilda.members:
+            if not discord.Member.bot:
+                member_list.append(discord.Member)
+    print(member_list)
 
 # Welcome message to new members
 @bot.event
@@ -97,20 +99,30 @@ async def _8ball(ctx, *, question):
 @bot.command()
 async def clear(ctx, amount=5):
     print(" CLEAR START ".center(50, '-'))
-    print(f'{ctx.author} cleaned {amount} messages.\n')
-    await ctx.channel.purge(limit=amount+1)
-    await ctx.send(f'{ctx.author} cleaned {amount} messages.')
+    try:
+        await ctx.channel.purge(limit=amount+1)
+        print(f'{ctx.author} cleaned {amount} messages.\n')
+        await ctx.send(f'{ctx.author} cleaned {amount} messages.')
+
+    except:
+        await ctx.send(f' \nOpsie!\nNão tenho permissão para excluir mensagens neste canal!')
     print(" CLEAR END ".center(50, '-'), '\n')
 
 
 # Kicks the specified player (ADM ONLY)
 # The command is $kick {member} // Member is the id of the kicked person (guy#1234)
-@bot.command()
-async def kick(ctx, member : discord.Member, *, reason=None):
+@bot.command(pass_context = True)
+async def kick(ctx, member : discord.User, *, reason='corno'):
     print(" KICK START ".center(50, '-'))
-    if member not in member_list:
+
+    if member in member_list:
+        print(f'{member} is on the list.')
+        await ctx.guild.kick(member, reason)
         await ctx.send(f'O corno {member} foi kickado pelo motivo:\n - {reason} -')
-        await kick
+
+    else:
+        print(f'{member} Not on server')
+        await ctx.send(f'O membro {member} não está no servidor!\nTem certeza que informou o id correto?')
 
     print(" KICK END ".center(50, '-'), '\n')
 
@@ -173,6 +185,8 @@ async def join(ctx):
 
     try:
         await channel.connect()
+        #voice = get(bot.voice_clients, guild=ctx.guild)
+        #play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source="C:/GÁS_PATH/"))
         print(f'Bot Connected to {channel} channel.')
 
     except discord.ClientException:
@@ -202,7 +216,7 @@ async def leave(ctx):
 # Plays audio from specific youtube url.
 @bot.command()
 async def play(ctx, url):
-    print(" teste YDL START ".center(50, '-'), '\n')
+    print(" PLAY START ".center(50, '-'), '\n')
 
     voice = get(bot.voice_clients, guild=ctx.guild)
     YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist':'True'}
@@ -224,7 +238,7 @@ async def play(ctx, url):
         await ctx.send("Already playing song")
         return
 
-    print(" teste YDL END ".center(50, '-'), '\n')
+    print(" PLAY END ".center(50, '-'), '\n')
 
 
 # Pauses the currently music, if there's any.
@@ -275,7 +289,32 @@ async def search(ctx, *, search):
     except:
         await ctx.send('Somenthing happened with the Discord API.\nTry again another time.')
 
+#This must be fixed
+@bot.command()
+async def help(ctx):
+     await ctx.send('''
 
+                 - Bot commands -
+                 <Bugs are expected, please tell me if you discover anything.>
+
+                 $help: Display the currently working bot commands. or not
+                 $ping: Returns a Pong! with the time in ms that the API communicate with the code.
+                 $_8ball <question>: This command returns a message with a response for your question. Based on a list of answers.
+                 $clear <amount>: Erases the previous <amount> messages, or return a message when the bot or the author have no permission to do that.
+                 $kick <member> <reason>: Kicks the specified <member> and displays the <reason>. (The reason is optional.)
+                 $get_members: Returns all the members names.
+                 $member_info: Returns some info of the <member>.
+                 $join: Forces the bot to enter in voice chat. (The caller MUST be on a voice chat, or the bot will not join.)
+                 $leave: Forces the bot to leave any voice chat that he joined.
+                 $play <youtube link>: Tells the bot to play the AUDIO of the specified youtube video or stream.
+                 $pause: Forces the bot to pause ANY currently playing audio.
+                 $Resume: Resume the previous paused audio.
+                 $stop: Forces the bot to STOP any currently playing audio.
+                 $search <my father>: Searches for <my father> on youtube and play the audio from the FIRST video found.
+
+                 <i will probably cry to death if you discover any bug>
+
+                   ''')
 # should have a gui implementation here...
 def bot_gui():
     print('You should do the gui thing!')
