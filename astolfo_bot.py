@@ -27,7 +27,6 @@ async def on_ready():
         for discord.Member in guilda.members:
             if not discord.Member.bot:
                 member_list.append(discord.Member)
-    print(member_list)
 
 # Welcome message to new members
 @bot.event
@@ -116,9 +115,12 @@ async def kick(ctx, member : discord.User, *, reason='corno'):
     print(" KICK START ".center(50, '-'))
 
     if member in member_list:
-        print(f'{member} is on the list.')
-        await ctx.guild.kick(member, reason)
-        await ctx.send(f'O corno {member} foi kickado pelo motivo:\n - {reason} -')
+        if ctx.message.author.guild_permissions.administrator:
+            print(member, ctx.message.author.guild_permissions.administrator)
+            await ctx.guild.kick(member, reason=reason)
+            await ctx.send(f'O corno {member} foi kickado pelo motivo:\n - {reason} -')
+        else:
+            await ctx.send(f'{ctx.message.author} não tem permissão para kickar ninguém.')
 
     else:
         print(f'{member} Not on server')
@@ -183,15 +185,15 @@ async def join(ctx):
     else:
         channel = ctx.author.voice.channel
 
-    try:
-        await channel.connect()
-        #voice = get(bot.voice_clients, guild=ctx.guild)
-        #play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source="C:/GÁS_PATH/"))
-        print(f'Bot Connected to {channel} channel.')
+    #try:
+    await channel.connect()
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    voice.play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source="gas.mp3"))
+    print(f'Bot Connected to {channel} channel.')
 
-    except discord.ClientException:
-        print('Bot already connected to voice channel.')
-        await ctx.send('Bot already connected to voice channel.')
+    #except discord.ClientException:
+    #print('Bot already connected to voice channel.')
+    #await ctx.send('Bot already connected to voice channel.')
 
     print(" JOIN END ".center(50, '-'), '\n')
 
@@ -289,7 +291,12 @@ async def search(ctx, *, search):
     except:
         await ctx.send('Somenthing happened with the Discord API.\nTry again another time.')
 
-#This must be fixed
+
+@bot.command()
+async def skip(ctx):
+    await ctx.send('ainda nao funcionakkk')
+
+
 @bot.command()
 async def help(ctx):
      await ctx.send('''
